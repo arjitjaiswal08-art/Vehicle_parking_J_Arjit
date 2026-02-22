@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Booking{% endblock %}
+
+{% block content %}
+<div class="container fade-in mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Confirm Your Booking</h4>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Please review your booking details before confirming:</p>
+                    <ul class="list-group mb-4">
+                        <li class="list-group-item"><strong>Parking Lot:</strong> {{ lot.name }}</li>
+                        <li class="list-group-item"><strong>Location:</strong> {{ lot.prime_location_name }}</li>
+                        <li class="list-group-item"><strong>Address:</strong> {{ lot.address }}</li>
+                        <li class="list-group-item"><strong>Spot Number:</strong> {{ spot.spot_number }}</li>
+                        <li class="list-group-item"><strong>Vehicle Number:</strong> 
+                            {% if vehicle and vehicle.license_plate %}
+                                {{ vehicle.license_plate }}
+                            {% elif vehicle_number %}
+                                {{ vehicle_number }}
+                            {% else %}
+                                Not Provided
+                            {% endif %}
+                        </li>
+                        <li class="list-group-item"><strong>Price per hour:</strong> ₹{{ lot.price_per_hour }}</li>
+                        <li class="list-group-item"><strong>Estimated Start Time:</strong> {{ start_time }}</li>
+                    </ul>
+                    <form method="POST" action="{{ url_for('confirm_booking', lot_id=lot.id) }}">
+                        <input type="hidden" name="lot_id" value="{{ lot.id }}">
+                        <input type="hidden" name="spot_id" value="{{ spot.id }}">
+                        <input type="hidden" name="vehicle_id" value="{{ vehicle.id if vehicle else '' }}">
+                        <input type="hidden" name="vehicle_number" value="{{ vehicle_number if vehicle_number else (vehicle.license_plate if vehicle and vehicle.license_plate else '') }}">
+                        <input type="hidden" name="start_time" value="{{ start_time }}">
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('user_dashboard') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check-circle me-2"></i>Confirm Booking
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

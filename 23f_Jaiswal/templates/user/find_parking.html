@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Find Parking{% endblock %}
+
+{% block content %}
+<div class="container fade-in mt-4">
+    <h2 class="mb-4">Find Parking</h2>
+<form method="get" action="">
+    <div class="input-group mb-4">
+        <input type="text" name="location" class="form-control" placeholder="Enter location" value="{{ request.args.get('location', '') }}">
+        <button class="btn btn-outline-primary" type="submit">Search</button>
+    </div>
+</form>
+    <div class="row">
+        {% if lots %}
+            {% for lot in lots %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">{{ lot.name }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Location:</strong> {{ lot.prime_location_name }}</p>
+                        <p><strong>Address:</strong> {{ lot.address }}</p>
+                        <p><strong>Price per hour:</strong> ₹{{ lot.price_per_hour }}</p>
+                        {% set available = lot.spots|selectattr('status', 'equalto', 'A')|list|length %}
+                        <p><strong>Available spots:</strong> <span class="badge bg-success">{{ available }}</span></p>
+                        <a href="{{ url_for('book_spot', lot_id=lot.id) }}" class="btn btn-primary mt-2">Reserve</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-warning">No available parking lots found.</div>
+            </div>
+        {% endif %}
+    </div>
+    <a href="{{ url_for('user_dashboard') }}" class="btn btn-secondary mt-4">Back to Dashboard</a>
+</div>
+{% endblock %}

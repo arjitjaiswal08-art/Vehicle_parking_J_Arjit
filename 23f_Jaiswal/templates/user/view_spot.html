@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}View Parking Spot{% endblock %}
+
+{% block content %}
+<div class="container fade-in mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">Parking Spot Details</h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Spot #{{ spot.spot_number }} {% if spot.status == 'A' %}<span class="badge bg-success">Available</span>{% else %}<span class="badge bg-danger">Occupied</span>{% endif %}</h5>
+                    <p class="mb-1"><strong>Lot:</strong> {{ lot.name }}</p>
+                    <p class="mb-1"><strong>Location:</strong> {{ lot.prime_location_name }}</p>
+                    <p class="mb-1"><strong>Address:</strong> {{ lot.address }}</p>
+                    <p class="mb-1"><strong>Price per hour:</strong> ₹{{ lot.price_per_hour }}</p>
+                    <hr>
+                    {% if spot.status == 'O' and reservation %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-user me-2"></i> This spot is currently occupied.
+                        </div>
+                        <p class="mb-1"><strong>Occupied by:</strong> {{ reservation.user.full_name or reservation.user.username }}</p>
+<p class="mb-1"><strong>Owner Name:</strong> {{ reservation.owner_name or reservation.user.full_name or reservation.user.username }}</p>
+<p class="mb-1"><strong>Vehicle Number:</strong> {{ reservation.vehicle_number or reservation.user.vehicle_number }}</p>
+                        <p class="mb-1"><strong>Parked at:</strong> {{ reservation.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+
+
+                    {% else %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-parking me-2"></i> This spot is currently available for booking.
+                        </div>
+                    {% endif %}
+                    <div class="d-grid gap-2 mt-3">
+                        <a href="{{ url_for('user_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4 fade-in">
+    <div class="col-12">
+        <h2 class="mb-4">Admin Dashboard</h2>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="card dashboard-card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Parking Lots</h5>
+                <p class="card-text display-4">{{ parking_lots|length }}</p>
+                <a href="{{ url_for('admin_parking_lots') }}" class="text-white">View all <i class="fas fa-arrow-right ms-1"></i></a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dashboard-card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Available Spots</h5>
+                <p class="card-text display-4">{{ available_spots }}</p>
+                <span class="text-white">Out of {{ total_spots }} total spots</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dashboard-card bg-danger text-white">
+            <div class="card-body">
+                <h5 class="card-title">Occupied Spots</h5>
+                <p class="card-text display-4">{{ occupied_spots }}</p>
+                <span class="text-white">{{ (occupied_spots / total_spots * 100)|round(1) if total_spots > 0 else 0 }}% occupancy rate</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dashboard-card bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">Registered Users</h5>
+                <p class="card-text display-4">{{ users_count }}</p>
+                <a href="{{ url_for('admin_users') }}" class="text-white">View all <i class="fas fa-arrow-right ms-1"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Parking Lots Overview</h5>
+                <a href="{{ url_for('add_parking_lot') }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-plus"></i> Add New Lot
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Location</th>
+                                <th>Price/Hour</th>
+                                <th>Available/Total</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lot in parking_lots %}
+                            <tr>
+                                <td>{{ lot.name }}</td>
+                                <td>{{ lot.prime_location_name }}</td>
+                                <td>₹{{ lot.price_per_hour }}</td>
+                                <td>
+                                    {% set available = lot.spots|selectattr('status', 'equalto', 'A')|list|length %}
+                                    {% set total = lot.spots|length %}
+                                    <span class="badge {% if available/total < 0.2 %}bg-danger{% elif available/total < 0.5 %}bg-warning{% else %}bg-success{% endif %}">
+                                        {{ available }}/{{ total }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('admin_parking_spots', lot_id=lot.id) }}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if not parking_lots %}
+                <div class="text-center p-3">
+                    <p class="text-muted">No parking lots found. Create one to get started.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Occupancy Rate</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="occupancyChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+            <div class="card-body">
+    {% if recent_activities %}
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">Time</th>
+                    <th scope="col">User</th>
+                    <th scope="col">Action</th>
+                    <th scope="col">Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for activity in recent_activities %}
+                <tr>
+                    <td>{{ activity.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ activity.user.username if activity.user else 'System' }}</td>
+                    <td>{{ activity.action }}</td>
+                    <td>{{ activity.details or '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    
+    {% endif %}
+</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Occupancy chart
+    const ctx = document.getElementById('occupancyChart').getContext('2d');
+    const occupancyChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Occupied Spots', 'Available Spots'],
+            datasets: [{
+                data: [{{ occupied_spots }}, {{ available_spots }}] , 
+                backgroundColor: ['#dc3545', '#28a745'],
+                borderWidth: 1 
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}Parking History{% endblock %}
+
+{% block content %}
+<div class="container fade-in mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h4 class="mb-0">Parking History</h4>
+                </div>
+                <div class="card-body">
+                    {% if history %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Lot</th>
+                                    <th>Spot</th>
+                                    <th>Entry Time</th>
+                                    <th>Exit Time</th>
+                                    <th>Duration</th>
+                                    <th>Cost <i class="fas fa-info-circle" data-bs-toggle="tooltip" title="Total cost for this reservation"></i></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reservation in history %}
+                                <tr>
+                                    <td>{{ reservation.spot.lot.name }}</td>
+                                    <td>{{ reservation.spot.spot_number }}</td>
+                                    <td>{{ reservation.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        {% if reservation.leaving_timestamp and reservation.leaving_timestamp >= reservation.parking_timestamp %}
+                                            {{ reservation.leaving_timestamp.strftime('%Y-%m-%d %H:%M') }}
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if reservation.leaving_timestamp and reservation.leaving_timestamp >= reservation.parking_timestamp %}
+                                            {% set duration_seconds = (reservation.leaving_timestamp - reservation.parking_timestamp).total_seconds() %}
+                                            {% set hours = (duration_seconds // 3600)|int %}
+                                            {% set minutes = ((duration_seconds % 3600) // 60)|int %}
+                                            {{ hours }}h {{ minutes }}m
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if reservation.leaving_timestamp and reservation.leaving_timestamp >= reservation.parking_timestamp %}
+                                            <span class="fw-semibold">₹{{ reservation.total_cost|round(2) }}</span>
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-4">
+                        <h5>Summary</h5>
+                        <p><strong>Total Spent:</strong> ₹{{ history|sum(attribute='total_cost')|round(2) }}</p>
+                        <p><strong>Average Cost:</strong> ₹{{ (history|sum(attribute='total_cost') / history|length)|round(2) if history|length > 0 else 0 }}</p>
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Cost per Reservation (Bar Chart)</h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="costBarChart" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Cost Distribution by Lot (Pie Chart)</h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="costPieChart" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2 mt-3">
+                        <a href="{{ url_for('user_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+                    </div>
+                    {% else %}
+                    <div class="text-center p-4">
+                        <p class="text-muted">No parking history found.</p>
+                        <a href="{{ url_for('user_dashboard') }}" class="btn btn-secondary mt-2">Back to Dashboard</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if history %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Bar Chart: Cost per Reservation
+    const barLabels = [
+        {% for reservation in history %}
+            '{{ reservation.parking_timestamp.strftime('%m/%d') }}',
+        {% endfor %}
+    ];
+    const barData = [
+        {% for reservation in history %}
+            {{ reservation.total_cost }},
+        {% endfor %}
+    ];
+    const costBarCtx = document.getElementById('costBarChart').getContext('2d');
+    new Chart(costBarCtx, {
+        type: 'bar',
+        data: {
+            labels: barLabels,
+            datasets: [{
+                label: 'Parking Cost (₹)',
+                data: barData,
+                backgroundColor: '#3466AF'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+
+    // Pie Chart: Cost by Lot
+    const lotCostMap = {};
+    {% for reservation in history %}
+        lotCostMap['{{ reservation.spot.lot.name }}'] = (lotCostMap['{{ reservation.spot.lot.name }}'] || 0) + {{ reservation.total_cost }};
+    {% endfor %}
+    const pieLabels = Object.keys(lotCostMap);
+    const pieData = Object.values(lotCostMap);
+    const pieColors = [
+        '#3466AF', '#28a745', '#dc3545', '#ffc107', '#6f42c1', '#fd7e14', '#20c997', '#6610f2', '#e83e8c', '#17a2b8'
+    ];
+    const costPieCtx = document.getElementById('costPieChart').getContext('2d');
+    new Chart(costPieCtx, {
+        type: 'pie',
+        data: {
+            labels: pieLabels,
+            datasets: [{
+                data: pieData,
+                backgroundColor: pieColors
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}

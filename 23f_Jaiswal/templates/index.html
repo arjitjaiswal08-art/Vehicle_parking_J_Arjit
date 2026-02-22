@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}ParkAdda - Home{% endblock %}
+
+{% block content %}
+<div class="row fade-in">
+    <div class="col-md-6 d-flex align-items-center">
+        <div>
+            <h1 class="display-4 fw-bold mb-4">Welcome to ParkAdda</h1>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                {% if current_user.is_authenticated %}
+                    {% if current_user.is_admin %}
+                        <a href="{{ url_for('admin_summary') }}" class="btn btn-primary btn-lg px-4 me-md-2">Go to Dashboard</a>
+                    {% else %}
+                        <a href="{{ url_for('user_dashboard') }}" class="btn btn-primary btn-lg px-4 me-md-2">Go to Dashboard</a>
+                    {% endif %}
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg px-4 me-md-2">Login</a>
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-secondary btn-lg px-4">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <!-- <div class="col-md-6">
+        <img src="https://images.pexels.com/photos/590726/pexels-photo-590726.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" class="img-fluid rounded-3 shadow-lg" alt="Parking Lot">
+    </div> -->
+</div>
+
+<div class="row mt-5 pt-5">
+    <div class="col-12 text-center mb-4">
+        <h2 class="fw-bold">Our Features</h2>
+        <p class="lead text-muted">Discover what makes ParkAdda the perfect solution for parking management</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card h-100 dashboard-card">
+            <div class="card-body text-center p-4">
+                <div class="mb-3">
+                    <i class="fas fa-search fa-3x text-primary"></i>
+                </div>
+                <h3 class="card-title h5 fw-bold">Find Parking</h3>
+                <p class="card-text">Easily find available parking spots across multiple locations.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 dashboard-card">
+            <div class="card-body text-center p-4">
+                <div class="mb-3">
+                    <i class="fas fa-car fa-3x text-primary"></i>
+                </div>
+                <h3 class="card-title h5 fw-bold">Reserve Spots</h3>
+                <p class="card-text">Book parking spots in advance with just a few clicks.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 dashboard-card">
+            <div class="card-body text-center p-4">
+                <div class="mb-3">
+                    <i class="fas fa-chart-line fa-3x text-primary"></i>
+                </div>
+                <h3 class="card-title h5 fw-bold">Track Usage</h3>
+                <p class="card-text">Monitor your parking history and spending over time.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row my-5 py-5 bg-light rounded-3">
+    <!-- <div class="col-md-6">
+        <img src="https://images.pexels.com/photos/127324/pexels-photo-127324.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" class="img-fluid rounded-3 shadow" alt="Parking Management">
+    </div> -->
+    <!-- <div class="col-md-6 d-flex align-items-center">
+        <div class="p-4">
+            <h2 class="fw-bold mb-3">For Administrators</h2>
+            <p class="lead">ParkAdda provides powerful tools for parking lot administrators:</p>
+            <ul class="list-unstyled">
+                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Create and manage multiple parking lots</li>
+                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Monitor parking spot availability in real-time</li>
+                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Track usage summary and generate reports</li>
+                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Adjust pricing and capacity as needed</li>
+            </ul>
+        </div>
+    </div> -->
+</div>
+{% endblock %}

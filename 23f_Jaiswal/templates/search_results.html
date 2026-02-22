@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Results{% endblock %}
+
+{% block content %}
+<div class="row mt-4">
+    <div class="col-12">
+        <h2 class="mb-4">Search Results</h2>
+        {% if query %}
+            <div class="alert alert-info">You searched for: <strong>{{ query }}</strong></div>
+            {% if results and results|length > 0 %}
+                <div class="table-responsive mt-4">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Name</th>
+                                <th>Location</th>
+                                <th>Price/Hour</th>
+                                <th>Address</th>
+                                <th>Pincode</th>
+                                <th>Available Spots</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lot in results %}
+                            <tr>
+                                <td>{{ lot.name }}</td>
+                                <td>{{ lot.prime_location_name }}</td>
+                                <td>&#8377;{{ lot.price_per_hour }}</td>
+                                <td>{{ lot.address }}</td>
+                                <td>{{ lot.pincode }}</td>
+                                <td>{{ lot.spots|selectattr('status', 'equalto', 'A')|list|length }} / {{ lot.maximum_spots }}</td>
+                                <td>
+                                    <a href="{{ url_for('user_dashboard') }}" class="btn btn-sm btn-outline-primary">View</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-warning mt-4">No results found for your search.</div>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-warning">No search query provided.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

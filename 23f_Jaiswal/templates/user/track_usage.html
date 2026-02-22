@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Track Usage{% endblock %}
+
+{% block content %}
+<div class="container fade-in mt-4">
+    <h2 class="mb-4">Track Usage</h2>
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Your Parking History</h5>
+        </div>
+        <div class="card-body">
+            {% if history %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Lot</th>
+                            <th>Spot</th>
+                            <th>Entry Time</th>
+                            <th>Exit Time</th>
+                            <th>Duration</th>
+                            <th>Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reservation in history %}
+                        <tr>
+                            <td>{{ reservation.spot.lot.name }}</td>
+                            <td>{{ reservation.spot.spot_number }}</td>
+                            <td>{{ reservation.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                {% if reservation.leaving_timestamp and reservation.leaving_timestamp >= reservation.parking_timestamp %}
+                                    {{ reservation.leaving_timestamp.strftime('%Y-%m-%d %H:%M') }}
+                                {% else %}
+                                    <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if reservation.leaving_timestamp and reservation.leaving_timestamp >= reservation.parking_timestamp %}
+                                    {% set duration_seconds = (reservation.leaving_timestamp - reservation.parking_timestamp).total_seconds() %}
+                                    {% set hours = (duration_seconds // 3600)|int %}
+                                    {% set minutes = ((duration_seconds % 3600) // 60)|int %}
+                                    {{ hours }}h {{ minutes }}m
+                                {% else %}
+                                    <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if reservation.leaving_timestamp and reservation.leaving_timestamp >= reservation.parking_timestamp %}
+                                    <span class="fw-semibold">₹{{ reservation.total_cost|round(2) }}</span>
+                                {% else %}
+                                    <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="alert alert-success mt-3">
+                <strong>Total Spent:</strong> ₹{{ total_spent|round(2) }}
+            </div>
+            {% else %}
+            <div class="alert alert-info">No parking history found.</div>
+            {% endif %}
+            <a href="{{ url_for('user_dashboard') }}" class="btn btn-secondary mt-4">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
